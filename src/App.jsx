@@ -6,7 +6,7 @@ import './App.css'
 import { generateRandomString, generateCodeChallenge } from './spotifyAuth'
 import Callback from './Callback'
 
-const clientId = 'YOUR_SPOTIFY_CLIENT_ID';
+const clientId = '7971cc14dfda44ecacce2f3eaa899395';
 const redirectUri = 'https://spotify-playlist-splitter-beta.vercel.app/callback';
 const scope = [
   'playlist-read-private',

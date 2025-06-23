@@ -11,22 +11,20 @@ function Callback() {
   useEffect(() => {
     const handleCallback = async () => {
       console.log('Callback component mounted');
-      console.log('Current URL:', window.location.href);
+      console.log('Client ID:', clientId);
+      console.log('Redirect URI:', window.location.origin + '/callback');
       
       try {
-        // Get the authorization code from the URL
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get('code');
         
-        console.log('Authorization code:', code);
+        console.log('Authorization code received:', !!code);
         
         if (!code) {
-          console.log('No authorization code found');
           setStatus('Error: No authorization code received');
           return;
         }
 
-        // Get the code verifier from localStorage
         const codeVerifier = localStorage.getItem('code_verifier');
         console.log('Code verifier found:', !!codeVerifier);
         
@@ -52,9 +50,13 @@ function Callback() {
           })
         });
 
+        console.log('Token response status:', tokenResponse.status);
+        
         const tokenData = await tokenResponse.json();
+        console.log('Token response:', tokenData);
 
         if (tokenData.error) {
+          console.error('Token error:', tokenData.error, tokenData.error_description);
           setStatus('Error: ' + tokenData.error_description);
           return;
         }
