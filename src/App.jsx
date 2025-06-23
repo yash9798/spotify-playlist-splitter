@@ -126,7 +126,7 @@ function MainApp() {
                   fontWeight: 'bold',
                   textShadow: '0 2px 4px rgba(0,0,0,0.3)'
                 }}>
-                  Spotify Playlist Splitter
+                  Splitify
                 </h1>
                 <p style={{ 
                   margin: '5px 0 0 0', 
@@ -380,7 +380,7 @@ function MainApp() {
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text'
           }}>
-            Playlist Splitter
+            Splitify
           </h1>
           <p style={{ 
             color: '#b3b3b3', 
