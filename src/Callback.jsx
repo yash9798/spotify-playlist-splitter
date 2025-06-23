@@ -10,24 +10,33 @@ function Callback() {
 
   useEffect(() => {
     const handleCallback = async () => {
+      console.log('Callback component mounted');
+      console.log('Current URL:', window.location.href);
+      
       try {
         // Get the authorization code from the URL
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get('code');
         
+        console.log('Authorization code:', code);
+        
         if (!code) {
+          console.log('No authorization code found');
           setStatus('Error: No authorization code received');
           return;
         }
 
         // Get the code verifier from localStorage
         const codeVerifier = localStorage.getItem('code_verifier');
+        console.log('Code verifier found:', !!codeVerifier);
         
         if (!codeVerifier) {
           setStatus('Error: No code verifier found');
           return;
         }
 
+        console.log('Starting token exchange...');
+        
         // Exchange code for access token
         const tokenResponse = await fetch('https://accounts.spotify.com/api/token', {
           method: 'POST',
