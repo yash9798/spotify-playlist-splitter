@@ -6,6 +6,13 @@ export async function fetchAllPlaylistTracks(accessToken, playlistId) {
       headers: { Authorization: 'Bearer ' + accessToken }
     });
     const data = await response.json();
+
+    if (!data.items) {
+      console.error('Spotify API response:', data);
+      alert(`Spotify API error: ${JSON.stringify(data.error || data)}`);
+      return [];
+    }
+
     tracks = tracks.concat(data.items.filter(item => item.track && item.track.id));
     url = data.next;
   }
