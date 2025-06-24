@@ -20,7 +20,8 @@ const scope = [
 function MainApp() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
-  const [playlists, setPlaylists] = useState([]);
+  const [allPlaylists, setAllPlaylists] = useState([]);
+  const [showSharedPlaylists, setShowSharedPlaylists] = useState(false);
   const [loading, setLoading] = useState(false);
   const [selectedPlaylist, setSelectedPlaylist] = useState(null);
   const navigate = useNavigate();
@@ -59,7 +60,7 @@ function MainApp() {
         }
       });
       const data = await response.json();
-      setPlaylists(data.items);
+      setAllPlaylists(data.items);
     } catch (error) {
       console.error('Error fetching playlists:', error);
     } finally {
@@ -91,13 +92,30 @@ function MainApp() {
     localStorage.removeItem('token_expires_at');
     setIsLoggedIn(false);
     setUserProfile(null);
-    setPlaylists([]);
+    setAllPlaylists([]);
     setSelectedPlaylist(null);
+    setShowSharedPlaylists(false);
   };
 
   const handlePlaylistSelect = (playlist) => {
     setSelectedPlaylist(playlist);
   };
+
+  // Filter playlists based on ownership and toggle
+  const getFilteredPlaylists = () => {
+    if (!userProfile) return [];
+    
+    if (showSharedPlaylists) {
+      return allPlaylists;
+    } else {
+      // Only show playlists owned by the current user
+      return allPlaylists.filter(playlist => playlist.owner.id === userProfile.id);
+    }
+  };
+
+  const filteredPlaylists = getFilteredPlaylists();
+  const ownedPlaylists = allPlaylists.filter(playlist => playlist.owner.id === userProfile?.id);
+  const sharedPlaylists = allPlaylists.filter(playlist => playlist.owner.id !== userProfile?.id);
 
   if (isLoggedIn) {
     return (
@@ -126,7 +144,7 @@ function MainApp() {
                   fontWeight: 'bold',
                   textShadow: '0 2px 4px rgba(0,0,0,0.3)'
                 }}>
-                  Splitify
+                  🎵 Splitify
                 </h1>
                 <p style={{ 
                   margin: '5px 0 0 0', 
@@ -197,10 +215,86 @@ function MainApp() {
                 <p style={{ 
                   color: '#b3b3b3', 
                   fontSize: '1.1rem',
-                  margin: '0'
+                  margin: '0 0 20px 0'
                 }}>
                   Select a playlist to split into sub-playlists based on song characteristics
                 </p>
+                
+                {/* Playlist Filter Toggle */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '15px',
+                  marginBottom: '20px'
+                }}>
+                  <span style={{ color: '#b3b3b3', fontSize: '0.9rem' }}>
+                    Show shared playlists
+                  </span>
+                  <label style={{
+                    position: 'relative',
+                    display: 'inline-block',
+                    width: '50px',
+                    height: '24px'
+                  }}>
+                    <input
+                      type="checkbox"
+                      checked={showSharedPlaylists}
+                      onChange={(e) => setShowSharedPlaylists(e.target.checked)}
+                      style={{ opacity: 0, width: 0, height: 0 }}
+                    />
+                    <span style={{
+                      position: 'absolute',
+                      cursor: 'pointer',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      backgroundColor: showSharedPlaylists ? '#1DB954' : '#333',
+                      transition: '0.3s',
+                      borderRadius: '24px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      padding: '2px'
+                    }}>
+                      <span style={{
+                        height: '18px',
+                        width: '18px',
+                        backgroundColor: 'white',
+                        borderRadius: '50%',
+                        transition: '0.3s',
+                        transform: showSharedPlaylists ? 'translateX(26px)' : 'translateX(0)'
+                      }}></span>
+                    </span>
+                  </label>
+                </div>
+
+                {/* Playlist Count Info */}
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  gap: '30px',
+                  marginBottom: '30px'
+                }}>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#1DB954' }}>
+                      {ownedPlaylists.length}
+                    </div>
+                    <div style={{ fontSize: '0.9rem', color: '#b3b3b3' }}>
+                      Your Playlists
+                    </div>
+                  </div>
+                  {showSharedPlaylists && (
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#888' }}>
+                        {sharedPlaylists.length}
+                      </div>
+                      <div style={{ fontSize: '0.9rem', color: '#b3b3b3' }}>
+                        Shared Playlists
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div style={{ 
@@ -209,7 +303,7 @@ function MainApp() {
                 gap: '20px',
                 marginBottom: '40px'
               }}>
-                {playlists.map((playlist) => (
+                {filteredPlaylists.map((playlist) => (
                   <div 
                     key={playlist.id}
                     onClick={() => handlePlaylistSelect(playlist)}
@@ -221,7 +315,8 @@ function MainApp() {
                       transition: 'all 0.3s ease',
                       border: selectedPlaylist?.id === playlist.id ? '2px solid #1DB954' : '2px solid transparent',
                       position: 'relative',
-                      overflow: 'hidden'
+                      overflow: 'hidden',
+                      opacity: playlist.owner.id !== userProfile?.id ? 0.7 : 1
                     }}
                     onMouseOver={(e) => {
                       e.target.style.transform = 'translateY(-4px)';
@@ -248,6 +343,23 @@ function MainApp() {
                         fontSize: '12px'
                       }}>
                         ✓
+                      </div>
+                    )}
+                    
+                    {/* Ownership indicator */}
+                    {playlist.owner.id !== userProfile?.id && (
+                      <div style={{
+                        position: 'absolute',
+                        top: '10px',
+                        left: '10px',
+                        backgroundColor: '#888',
+                        color: 'white',
+                        borderRadius: '12px',
+                        padding: '4px 8px',
+                        fontSize: '10px',
+                        fontWeight: '600'
+                      }}>
+                        SHARED
                       </div>
                     )}
                     
@@ -309,6 +421,23 @@ function MainApp() {
                   </div>
                 ))}
               </div>
+
+              {filteredPlaylists.length === 0 && (
+                <div style={{ textAlign: 'center', padding: '40px' }}>
+                  <div style={{ fontSize: '3rem', marginBottom: '20px' }}>
+                    {showSharedPlaylists ? '🤝' : '🎵'}
+                  </div>
+                  <h3 style={{ margin: '0 0 10px 0', color: '#b3b3b3' }}>
+                    {showSharedPlaylists ? 'No shared playlists found' : 'No playlists found'}
+                  </h3>
+                  <p style={{ color: '#888', fontSize: '1rem' }}>
+                    {showSharedPlaylists 
+                      ? 'You don\'t have access to any shared playlists at the moment.'
+                      : 'Create some playlists in Spotify to get started!'
+                    }
+                  </p>
+                </div>
+              )}
 
               {selectedPlaylist && (
                 <div style={{ textAlign: 'center' }}>
