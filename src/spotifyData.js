@@ -29,6 +29,11 @@ export async function fetchAudioFeatures(accessToken, trackIds) {
     if (!response.ok) {
       const errorData = await response.json();
       console.error('Audio features API error:', errorData);
+      if (errorData.error) {
+        alert(`Spotify API error: ${errorData.error.status} - ${errorData.error.message}`);
+      } else {
+        alert(`Spotify API error: ${JSON.stringify(errorData)}`);
+      }
       throw new Error(`Audio features API error: ${errorData.error?.message || response.statusText}`);
     }
     const data = await response.json();
