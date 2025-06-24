@@ -16,7 +16,7 @@ const scope = [
   'playlist-modify-private',
   'user-read-private',
   'user-read-email'
-].join(' ')
+].join(' ');
 
 function MainApp() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
