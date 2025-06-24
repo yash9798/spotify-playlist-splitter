@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const clientId = '7971cc14dfda44ecacce2f3eaa899395'; // Replace with your actual Client ID
-const clientSecret = 'a31071e85c42459c96c8b0b1f3506b8f'; // Replace with your actual Client Secret
+const clientId = '99e3e288557245dd9cb00a98f1b33494';
+const clientSecret = 'c44969e56ed14dc2bb4662b606d50128';
 
 function Callback() {
   const [status, setStatus] = useState('Processing...');

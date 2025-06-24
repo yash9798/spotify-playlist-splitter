@@ -7,7 +7,7 @@ import { generateRandomString, generateCodeChallenge } from './spotifyAuth'
 import Callback from './Callback'
 import { fetchAllPlaylistTracks, fetchAudioFeatures } from './spotifyData'
 
-const clientId = '7971cc14dfda44ecacce2f3eaa899395';
+const clientId = '99e3e288557245dd9cb00a98f1b33494';
 const redirectUri = 'https://spotify-playlist-splitter-beta.vercel.app/callback';
 const scope = [
   'playlist-read-private',
