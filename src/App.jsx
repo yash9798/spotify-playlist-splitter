@@ -5,6 +5,7 @@ import viteLogo from '/vite.svg'
 import './App.css'
 import { generateRandomString, generateCodeChallenge } from './spotifyAuth'
 import Callback from './Callback'
+import { fetchAllPlaylistTracks, fetchAudioFeatures } from './spotifyData'
 
 const clientId = '7971cc14dfda44ecacce2f3eaa899395';
 const redirectUri = 'https://spotify-playlist-splitter-beta.vercel.app/callback';
@@ -24,6 +25,9 @@ function MainApp() {
   const [showSharedPlaylists, setShowSharedPlaylists] = useState(false);
   const [loading, setLoading] = useState(false);
   const [selectedPlaylist, setSelectedPlaylist] = useState(null);
+  const [trackData, setTrackData] = useState([]);
+  const [audioFeatures, setAudioFeatures] = useState([]);
+  const [loadingTracks, setLoadingTracks] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -116,6 +120,23 @@ function MainApp() {
   const filteredPlaylists = getFilteredPlaylists();
   const ownedPlaylists = allPlaylists.filter(playlist => playlist.owner.id === userProfile?.id);
   const sharedPlaylists = allPlaylists.filter(playlist => playlist.owner.id !== userProfile?.id);
+
+  const handleSplitPlaylist = async () => {
+    if (!selectedPlaylist) return;
+    setLoadingTracks(true);
+    try {
+      const accessToken = localStorage.getItem('access_token');
+      // Fetch tracks
+      const tracks = await fetchAllPlaylistTracks(accessToken, selectedPlaylist.id);
+      setTrackData(tracks);
+      // Fetch audio features
+      const features = await fetchAudioFeatures(accessToken, tracks.map(t => t.id));
+      setAudioFeatures(features);
+    } catch (error) {
+      alert('Error fetching tracks or features: ' + error.message);
+    }
+    setLoadingTracks(false);
+  };
 
   if (isLoggedIn) {
     return (
@@ -442,6 +463,7 @@ function MainApp() {
               {selectedPlaylist && (
                 <div style={{ textAlign: 'center' }}>
                   <button 
+                    onClick={handleSplitPlaylist}
                     style={{ 
                       padding: '18px 36px', 
                       backgroundColor: '#1DB954', 
@@ -454,17 +476,18 @@ function MainApp() {
                       transition: 'all 0.3s ease',
                       boxShadow: '0 4px 15px rgba(29, 185, 84, 0.3)'
                     }}
-                    onMouseOver={(e) => {
-                      e.target.style.transform = 'translateY(-2px)';
-                      e.target.style.boxShadow = '0 6px 20px rgba(29, 185, 84, 0.4)';
-                    }}
-                    onMouseOut={(e) => {
-                      e.target.style.transform = 'translateY(0)';
-                      e.target.style.boxShadow = '0 4px 15px rgba(29, 185, 84, 0.3)';
-                    }}
                   >
-                    🎯 Split "{selectedPlaylist.name}" into Sub-playlists
+                    {loadingTracks ? 'Loading...' : `🎯 Split "${selectedPlaylist.name}" into Sub-playlists`}
                   </button>
+                </div>
+              )}
+
+              {trackData.length > 0 && audioFeatures.length > 0 && (
+                <div style={{ marginTop: '30px', background: '#181818', borderRadius: '12px', padding: '20px' }}>
+                  <h3>Fetched {trackData.length} tracks and {audioFeatures.length} audio features!</h3>
+                  <pre style={{ color: '#b3b3b3', fontSize: '0.9rem', maxHeight: '200px', overflow: 'auto' }}>
+                    {JSON.stringify(audioFeatures.slice(0, 3), null, 2)}
+                  </pre>
                 </div>
               )}
             </div>
