@@ -7,10 +7,13 @@ export async function fetchAllPlaylistTracks(accessToken, playlistId) {
     });
     const data = await response.json();
 
-    if (!data.items) {
-      console.error('Spotify API response:', data);
+    // Log the full response for debugging
+    console.log('Spotify API response:', data);
+
+    // Robust error check
+    if (!data || !Array.isArray(data.items)) {
       alert(`Spotify API error: ${JSON.stringify(data.error || data)}`);
-      return [];
+      return []; // Return an empty array to prevent .filter on undefined
     }
 
     tracks = tracks.concat(data.items.filter(item => item.track && item.track.id));
