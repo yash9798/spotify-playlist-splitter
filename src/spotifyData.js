@@ -7,18 +7,14 @@ export async function fetchAllPlaylistTracks(accessToken, playlistId) {
     });
     const data = await response.json();
 
-    // Log the full response for debugging
-    console.log('Spotify API response:', data);
+    // Filter out unavailable or local tracks
+    const validTracks = (data.items || [])
+      .filter(item => item.track && !item.track.is_local && item.track.id);
 
-    // Robust error check
-    if (!data || !Array.isArray(data.items)) {
-      alert(`Spotify API error: ${JSON.stringify(data.error || data)}`);
-      return []; // Return an empty array to prevent .filter on undefined
-    }
-
-    tracks = tracks.concat(data.items.filter(item => item.track && item.track.id));
+    tracks = tracks.concat(validTracks);
     url = data.next;
   }
+  // Return only the track objects
   return tracks.map(item => item.track);
 }
 
